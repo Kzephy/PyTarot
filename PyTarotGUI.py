@@ -1,8 +1,8 @@
+import os
 import secrets
-from tkinter import *
+from tkinter import Tk, Frame, Text
 from tkinter import ttk
 from PIL import Image, ImageTk
-import os
 
 # Get the directory path where the Python script is located
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -174,7 +174,7 @@ CARD_MEANINGS = {
     "King of Pentacles": "Abundance, success, ambition"
 }
 
-class Card():
+class Tarot_Card():
 
     def __init__(self, name, reversed=False):
         self.name = name
@@ -188,98 +188,74 @@ class Card():
 
 
 def shuffle_deck():
-    deck = list(CARD_IMAGES.keys())  # Use only the names of the cards for the deck
-    for i in range(len(deck) - 1, 0, -1):
+    tarot_deck = list(CARD_IMAGES.keys())  # Use only the names of the cards for the deck
+    for i in range(len(tarot_deck) - 1, 0, -1):
         j = secrets.randbelow(i + 1)
-        deck[i], deck[j] = deck[j], deck[i]
-    return deck
+        tarot_deck[i], tarot_deck[j] = tarot_deck[j], tarot_deck[i]
+    return tarot_deck
 
 
 def draw_card():
-    deck = shuffle_deck()
-    if deck:
-        card_name = deck.pop()
+    tarot_deck = shuffle_deck()
+    if tarot_deck:
+        card_name = tarot_deck.pop()
         reversed_chance = secrets.randbelow(100)  # 50% chance of being reversed
         reversed_card = reversed_chance < 50
-        return Card(card_name, reversed=reversed_card)
+        return Tarot_Card(card_name, reversed=reversed_card)
 
 def draw_one_card_command():
-    card = draw_card()
-    if card:
-        card_name = f"Card: {card}"
-        card_meaning = f"Meaning: {CARD_MEANINGS.get(card.name, 'Meaning not available')}"
+    tarot_card = draw_card()
+    if tarot_card:
+        card_name = f"Card: {tarot_card}"
+        card_meaning = f"Meaning: {CARD_MEANINGS.get(tarot_card.name, 'Meaning not available')}"
         try:
-            img = Image.open(CARD_IMAGES[card.name])
-            if card.reversed:
+            img = Image.open(CARD_IMAGES[tarot_card.name])
+            if tarot_card.reversed:
                 img = img.rotate(180)
             img = img.resize((100, 175))
             img = ImageTk.PhotoImage(img)
-            card_label = ttk.Label(cards_frame.interior, text=card_name + "\n" + card_meaning, image=img, compound="top")
+            card_label = ttk.Label(cards_frame.container, text=card_name + "\n" + card_meaning, image=img, compound="top")
             card_label.image = img
-            
-            # Calculate row and column
-            row = len(cards_frame.cards) // 5
-            column = len(cards_frame.cards) % 5
-            
-            card_label.grid(row=row, column=column, padx=5, pady=5, sticky="nsew")
-            cards_frame.cards.append(card_label)
         except FileNotFoundError:
-            card_label = ttk.Label(cards_frame.interior, text=card_name + "\n" + card_meaning)
-            card_label.grid(sticky="w", padx=5, pady=5)
+            card_label = ttk.Label(cards_frame.container, text=card_name + "\n" + card_meaning)
 
-def on_configure(event):
-    cards_frame.canvas.configure(scrollregion=cards_frame.canvas.bbox("all"))
-
-def on_title_configure(event):
-    title_label.place(relx=0.5, rely=0.5, anchor=CENTER)
+        ### insert the card into the text widget
+        cards_frame.container.window_create("end", window=card_label, padx=5, pady=5)
+        cards_frame.cards.append(card_label)
 
 root = Tk()
 root.title("PyTarot")
-root.geometry("800x600")
+root.geometry("1024x768")
 
 # Define custom styles
 root.tk_setPalette(background="black", foreground="purple")
 root.style = ttk.Style(root)
-root.style.configure("TFrame", background="black")  # Set frame background color to black
-root.style.configure("TLabel", background= "black", foreground="purple")  # Set label text color to purple
-root.style.configure("TButton", background="black", foreground="purple")  # Set button text color to purple
+root.style.configure("TFrame", background="black")
+root.style.configure("TLabel", background="black", foreground="purple")
+root.style.configure("TButton", background="black", foreground="purple")
 
 frm = ttk.Frame(root, padding=10)
-frm.grid(sticky="ew")
-
-title_label = ttk.Label(frm, text="~ ~ ~ PyTarot ~ ~ ~", font=("Helvetica", 16, "bold"))
-title_label.grid(column=0, row=0, columnspan=2, pady=10, sticky="ew")
+frm.pack()  ### use pack() to pack the frame at the top side
 
 draw_button = ttk.Button(frm, text="Draw a Card", command=draw_one_card_command)
-draw_button.grid(column=0, row=1, padx=10, pady=10, sticky="ew")
+draw_button.grid(column=0, row=0, padx=10, pady=10, sticky="ew")
+
+title_label = ttk.Label(frm, text="~ ~ ~ PyTarot ~ ~ ~", font=("Helvetica", 16, "bold"))
+title_label.grid(column=1, row=0, pady=10, sticky="ew")
 
 quit_button = ttk.Button(frm, text="Quit", command=root.destroy)
-quit_button.grid(column=1, row=1, padx=10, pady=10, sticky="ew")
+quit_button.grid(column=2, row=0, padx=10, pady=10, sticky="ew")
 
 cards_frame = Frame(root, bg="black")
-cards_frame.grid(row=1, column=0, padx=10, pady=5, sticky="nsew")
+cards_frame.pack(fill="both", expand=1)  ### used pack()
 
-cards_frame.grid_rowconfigure(0, weight=1)
-cards_frame.grid_columnconfigure(0, weight=1)
+### use Text widget for showing the cards
+cards_frame.container = Text(cards_frame, width=1, height=1, bd=0)
+cards_frame.container.pack(side="left", fill="both", expand=1)
 
-cards_frame.canvas = Canvas(cards_frame, bg="black", highlightthickness=0)
-cards_frame.canvas.grid(row=0, column=0, sticky="nsew")
-
-cards_frame.scrollbar = ttk.Scrollbar(cards_frame, orient="vertical", command=cards_frame.canvas.yview)
-cards_frame.scrollbar.grid(row=0, column=1, sticky="ns")
-cards_frame.canvas.configure(yscrollcommand=cards_frame.scrollbar.set)
-
-# Create cards_frame.interior as a child of cards_frame.canvas
-cards_frame.interior = Frame(cards_frame.canvas, bg="black")
-cards_frame.canvas.create_window((0, 0), window=cards_frame.interior, anchor="nw")
-
-cards_frame.interior.bind("<Configure>", on_configure)
+cards_frame.scrollbar = ttk.Scrollbar(cards_frame, orient="vertical", command=cards_frame.container.yview)
+cards_frame.scrollbar.pack(side="right", fill="y")
 
 cards_frame.cards = []
-
-root.grid_rowconfigure(1, weight=1)
-root.grid_columnconfigure(0, weight=1)
-
-root.bind("<Configure>", on_title_configure)
 
 root.mainloop()
