@@ -9,7 +9,7 @@ def install_dependencies():
 
     # Compile code using PyInstaller for the current platform
     if sys.platform.startswith('linux'):
-        compile_command = ["pyinstaller", "--onefile", "--dispath=.", "PyTarotGUI.py"]
+        compile_command = ["pyinstaller", "--onefile", "--distpath=.", "PyTarotGUI.py"]
     elif sys.platform.startswith('win'):
         compile_command = ["pyinstaller", "--onefile", "--distpath=.", "PyTarotGUI.py"]
     else:
