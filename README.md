@@ -1,3 +1,5 @@
+**INSTALLER IS NOT WORKING FOR LINUX** I hope to fix this soon...
+
 Hello everyone! Thank you for checking out my code, this is my first ever Github project and my first time using the Tkinter and Secrets modules, So I apologize in advance for any GUI "jank".
 
 One of the first things you may notice is I did not use the Random module for this. I instead chose to use the Secrets module because it is a more "cryptographically secure" and "pseudorandom" number generator making it significantly less predictable. The module pulls from your operating systems randomness API giving more unique and esoteric results. This allows for "one of a kind" experiences, propagated by your own hardware!
